@@ -1,0 +1,335 @@
++<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>SafeGuard • Disaster Alert & Prediction System</title>
+        <link rel="stylesheet" href="styles.css" />
+    </head>
+    <body>
+        <div id="loginView" class="login-shell">
+            <div class="login-art">
+                <div class="brand">◈ SafeGuard</div>
+                <h1>Know earlier.<br /><span>Act faster.</span></h1>
+                <p>
+                    Real-time disaster monitoring, prediction and location-aware alerts for citizens and emergency
+                    authorities.
+                </p>
+                <div class="mini-stats">
+                    <b>24×7</b><small>Monitoring</small><b>6</b><small>Risk signals</small><b>3</b
+                    ><small>User roles</small>
+                </div>
+            </div>
+            <div class="login-card">
+                <div class="logo">◈</div>
+                <h2>Welcome back</h2>
+                <p class="muted">Sign in to your emergency dashboard</p>
+                <form id="loginForm">
+                    <label>Email</label><input id="email" type="email" value="user@disaster.local" required /><label
+                        >Password</label
+                    ><input id="password" type="password" value="user123" required /><button class="primary wide">
+                        Sign in securely
+                    </button>
+                </form>
+                <div id="loginMsg"></div>
+                <div class="demo-box">
+                    <b>Demo accounts</b><span>Admin: admin@disaster.local / admin123</span
+                    ><span>Authority: authority@disaster.local / authority123</span
+                    ><span>User: user@disaster.local / user123</span>
+                </div>
+            </div>
+        </div>
+        <div id="app" class="hidden">
+            <header class="topbar">
+                <div class="brand dark">◈ SafeGuard</div>
+                <div class="top-actions">
+                    <span id="liveDot">● Live</span
+                    ><button id="alertBell" class="iconbtn">🔔 <em id="alertCount">0</em></button>
+                    <div class="userchip" id="userChip">Demo Citizen</div>
+                </div>
+            </header>
+            <div class="layout">
+                <aside class="sidebar">
+                    <div class="role" id="roleBadge">USER</div>
+                    <nav>
+                        <button data-page="dashboard" class="nav active">▦ Dashboard</button
+                        ><button data-page="alerts" class="nav">⚠ Active Alerts</button
+                        ><button data-page="history" class="nav">◷ Alert History</button
+                        ><button data-page="predict" class="nav">⌁ Prediction Simulator</button
+                        ><button data-page="credentials" class="nav">✓ Credential Verify</button
+                        ><button data-page="settings" class="nav">⚙ Settings</button
+                        ><button data-page="admin" class="nav admin-only">▤ Admin Panel</button>
+                    </nav>
+                    <div class="sidebar-foot">
+                        <div>System status</div>
+                        <b><i></i> All services operational</b><button id="logout" class="logout">↪ Sign out</button>
+                    </div>
+                </aside>
+                <main class="content">
+                    <section id="dashboard" class="page active">
+                        <div class="pagehead">
+                            <div>
+                                <span class="eyebrow">REAL-TIME MONITORING</span>
+                                <h1>Good evening, <span id="helloName">Citizen</span></h1>
+                                <p>Environmental signals and active risk levels for monitored regions.</p>
+                            </div>
+                            <button class="outline" onclick="loadAll()">↻ Refresh data</button>
+                        </div>
+                        <div class="statgrid">
+                            <div class="stat">
+                                <small>ACTIVE ALERTS</small><strong id="sAlerts">0</strong
+                                ><span class="danger">● Immediate attention</span>
+                            </div>
+                            <div class="stat">
+                                <small>MONITORED USERS</small><strong id="sUsers">0</strong><span>● Registered</span>
+                            </div>
+                            <div class="stat">
+                                <small>PREDICTIONS</small><strong id="sPred">0</strong><span>● Processed signals</span>
+                            </div>
+                            <div class="stat">
+                                <small>AVAILABILITY</small><strong>99.9%</strong><span class="good">● Operational</span>
+                            </div>
+                        </div>
+                        <div class="grid2">
+                            <div class="panel">
+                                <div class="paneltitle">
+                                    <div>
+                                        <h3>Risk overview</h3>
+                                        <p>Current risk by monitored location</p>
+                                    </div>
+                                    <span class="legend"
+                                        ><i class="low"></i>Low <i class="med"></i>Medium <i class="high"></i>High</span
+                                    >
+                                </div>
+                                <div id="riskMap" class="riskmap"></div>
+                            </div>
+                            <div class="panel">
+                                <div class="paneltitle">
+                                    <div>
+                                        <h3>Environmental signals</h3>
+                                        <p>Latest sensor/API readings</p>
+                                    </div>
+                                    <span class="badge live">LIVE</span>
+                                </div>
+                                <div id="signals"></div>
+                            </div>
+                        </div>
+                        <div class="grid2">
+                            <div class="panel">
+                                <div class="paneltitle">
+                                    <div>
+                                        <h3>Risk trend</h3>
+                                        <p>Demonstration prediction probability</p>
+                                    </div>
+                                </div>
+                                <div class="chart">
+                                    <svg viewBox="0 0 700 190" preserveAspectRatio="none">
+                                        <polyline
+                                            points="0,150 100,125 200,138 300,82 400,105 500,55 600,72 700,25"
+                                            fill="none"
+                                            stroke="#ff5b45"
+                                            stroke-width="4"
+                                        />
+                                        <polyline
+                                            points="0,150 100,125 200,138 300,82 400,105 500,55 600,72 700,25"
+                                            fill="none"
+                                            stroke="#ff5b45"
+                                            stroke-opacity=".15"
+                                            stroke-width="18"
+                                        />
+                                    </svg>
+                                    <div class="chartlabels">
+                                        <span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span
+                                        ><span>Now</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="panel safety">
+                                <div class="paneltitle">
+                                    <div>
+                                        <h3>Emergency guidance</h3>
+                                        <p>Recommended actions when an alert is active</p>
+                                    </div>
+                                </div>
+                                <div class="guides">
+                                    <div>
+                                        01 <b>Stay informed</b
+                                        ><span>Follow official alerts and verified instructions.</span>
+                                    </div>
+                                    <div>
+                                        02 <b>Prepare essentials</b
+                                        ><span>Keep water, medicines, documents and a torch ready.</span>
+                                    </div>
+                                    <div>
+                                        03 <b>Move safely</b
+                                        ><span>Use designated routes and avoid unsafe structures.</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    <section id="alerts" class="page">
+                        <div class="pagehead">
+                            <div>
+                                <span class="eyebrow">EMERGENCY CENTER</span>
+                                <h1>Active Alerts</h1>
+                                <p>Warnings currently issued by the prediction and rule engine.</p>
+                            </div>
+                        </div>
+                        <div id="alertCards" class="alertcards"></div>
+                    </section>
+                    <section id="history" class="page">
+                        <div class="pagehead">
+                            <div>
+                                <span class="eyebrow">HISTORY & ANALYTICS</span>
+                                <h1>Prediction History</h1>
+                                <p>Review previous environmental predictions and confidence scores.</p>
+                            </div>
+                            <select id="historyFilter" class="select">
+                                <option>All disasters</option>
+                                <option>FLOOD</option>
+                                <option>EARTHQUAKE</option>
+                                <option>CYCLONE</option>
+                                <option>HEATWAVE</option>
+                            </select>
+                        </div>
+                        <div class="panel tablewrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Type</th>
+                                        <th>Location</th>
+                                        <th>Risk</th>
+                                        <th>Probability</th>
+                                        <th>Confidence</th>
+                                        <th>Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="historyTable"></tbody>
+                            </table>
+                        </div>
+                    </section>
+                    <section id="predict" class="page">
+                        <div class="pagehead">
+                            <div>
+                                <span class="eyebrow">DEMO / TEST CONSOLE</span>
+                                <h1>Prediction Simulator</h1>
+                                <p>Enter environmental conditions to execute the Java prediction rule engine.</p>
+                            </div>
+                        </div>
+                        <div class="grid2">
+                            <div class="panel formpanel">
+                                <h3>Environmental input</h3>
+                                <div class="formgrid">
+                                    <label>Location<input id="pLocation" value="Tirupati" /></label
+                                    ><label>Temperature °C<input id="pTemp" type="number" value="31" /></label
+                                    ><label>Humidity %<input id="pHum" type="number" value="82" /></label
+                                    ><label>Rainfall mm/hr<input id="pRain" type="number" value="150" /></label
+                                    ><label>Wind speed km/h<input id="pWind" type="number" value="28" /></label
+                                    ><label>Water level m<input id="pWater" type="number" value="4" /></label
+                                    ><label
+                                        >Seismic magnitude<input id="pSeismic" type="number" step=".1" value="2"
+                                    /></label>
+                                </div>
+                                <button class="primary" onclick="runPrediction()">Run prediction</button>
+                            </div>
+                            <div class="panel resultpanel" id="predictionResult">
+                                <div class="resultempty">
+                                    Run the simulator to see the prediction, risk level, probability, confidence and
+                                    recommended action.
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    <section id="credentials" class="page">
+                        <div class="pagehead">
+                            <div>
+                                <span class="eyebrow">TRUST & IDENTITY</span>
+                                <h1>Credential Verification</h1>
+                                <p>Verify role credentials before accessing authority functions.</p>
+                            </div>
+                        </div>
+                        <div class="credential-layout">
+                            <div class="panel verifybox">
+                                <h3>Verify a credential</h3>
+                                <p class="muted">Enter a credential code from the authority-issued record.</p>
+                                <input id="credentialCode" value="VC-AUTH-2026-001" /><button
+                                    class="primary wide"
+                                    onclick="verifyCredential()"
+                                >
+                                    Verify credential
+                                </button>
+                                <div id="credentialResult"></div>
+                            </div>
+                            <div class="panel">
+                                <h3>Issued credentials</h3>
+                                <div id="credentialList"></div>
+                            </div>
+                        </div>
+                    </section>
+                    <section id="settings" class="page">
+                        <div class="pagehead">
+                            <div>
+                                <span class="eyebrow">PERSONALIZATION</span>
+                                <h1>Alert Settings</h1>
+                                <p>Configure how you receive region-specific warnings.</p>
+                            </div>
+                        </div>
+                        <div class="settingsgrid">
+                            <div class="panel">
+                                <h3>Notification channels</h3>
+                                <label class="toggle"
+                                    ><span>In-app notifications</span><input type="checkbox" checked /><b></b></label
+                                ><label class="toggle"
+                                    ><span>Email alerts</span><input type="checkbox" checked /><b></b></label
+                                ><label class="toggle"><span>SMS alerts</span><input type="checkbox" /><b></b></label>
+                            </div>
+                            <div class="panel">
+                                <h3>Risk preferences</h3>
+                                <label
+                                    >Location<select>
+                                        <option>Tirupati</option>
+                                        <option>Chennai</option>
+                                        <option>Hyderabad</option>
+                                        <option>Visakhapatnam</option>
+                                    </select></label
+                                ><label
+                                    >Minimum alert level<select>
+                                        <option>Medium</option>
+                                        <option>High</option>
+                                        <option>Low</option>
+                                    </select></label
+                                ><label
+                                    >Disaster types
+                                    <div class="checks">
+                                        <span>☑ Flood</span><span>☑ Earthquake</span><span>☑ Cyclone</span
+                                        ><span>☑ Heatwave</span>
+                                    </div></label
+                                ><button class="primary" onclick="toast('Settings saved successfully')">
+                                    Save preferences
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+                    <section id="admin" class="page">
+                        <div class="pagehead">
+                            <div>
+                                <span class="eyebrow">CONTROL CENTER</span>
+                                <h1>Admin Panel</h1>
+                                <p>Monitor users, alerts, credentials and system activity.</p>
+                            </div>
+                        </div>
+                        <div class="admin-tabs">
+                            <button onclick="showAdmin('users')">Users</button
+                            ><button onclick="showAdmin('credentials')">Credentials</button
+                            ><button onclick="showAdmin('logs')">System Logs</button>
+                        </div>
+                        <div class="panel tablewrap"><div id="adminContent"></div></div>
+                    </section>
+                </main>
+            </div>
+        </div>
+        <div id="toast" class="toast"></div>
+        <script src="app.js"></script>
+    </body>
+</html>
