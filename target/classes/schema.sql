@@ -1,0 +1,76 @@
+CREATE DATABASE IF NOT EXISTS disaster_alert_db;
+USE disaster_alert_db;
+
+CREATE TABLE IF NOT EXISTS users (
+ id BIGINT PRIMARY KEY AUTO_INCREMENT,
+ full_name VARCHAR(100) NOT NULL,
+ email VARCHAR(150) NOT NULL UNIQUE,
+ password VARCHAR(255) NOT NULL,
+ phone VARCHAR(30),
+ location VARCHAR(100),
+ role VARCHAR(30) NOT NULL DEFAULT 'USER',
+ credential_status VARCHAR(30) DEFAULT 'VERIFIED',
+ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS disaster_readings (
+ id BIGINT PRIMARY KEY AUTO_INCREMENT,
+ location VARCHAR(100) NOT NULL,
+ temperature DECIMAL(6,2),
+ humidity DECIMAL(6,2),
+ rainfall DECIMAL(8,2),
+ wind_speed DECIMAL(8,2),
+ water_level DECIMAL(8,2),
+ seismic_magnitude DECIMAL(4,2),
+ source VARCHAR(80),
+ recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS predictions (
+ id BIGINT PRIMARY KEY AUTO_INCREMENT,
+ reading_id BIGINT,
+ disaster_type VARCHAR(40) NOT NULL,
+ risk_level VARCHAR(20) NOT NULL,
+ probability DECIMAL(5,2),
+ confidence DECIMAL(5,2),
+ message VARCHAR(500),
+ recommended_action VARCHAR(500),
+ predicted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ FOREIGN KEY (reading_id) REFERENCES disaster_readings(id)
+);
+
+CREATE TABLE IF NOT EXISTS alerts (
+ id BIGINT PRIMARY KEY AUTO_INCREMENT,
+ prediction_id BIGINT,
+ title VARCHAR(200) NOT NULL,
+ disaster_type VARCHAR(40) NOT NULL,
+ severity VARCHAR(20) NOT NULL,
+ region VARCHAR(100) NOT NULL,
+ message VARCHAR(1000) NOT NULL,
+ channels VARCHAR(100) DEFAULT 'IN_APP',
+ status VARCHAR(30) DEFAULT 'ACTIVE',
+ issued_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ FOREIGN KEY (prediction_id) REFERENCES predictions(id)
+);
+
+CREATE TABLE IF NOT EXISTS credentials (
+ id BIGINT PRIMARY KEY AUTO_INCREMENT,
+ user_id BIGINT NOT NULL,
+ credential_code VARCHAR(100) NOT NULL UNIQUE,
+ credential_type VARCHAR(100) NOT NULL,
+ issuer VARCHAR(150) NOT NULL,
+ status VARCHAR(30) DEFAULT 'VALID',
+ issued_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ expires_at DATE,
+ FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+CREATE TABLE IF NOT EXISTS system_logs (
+ id BIGINT PRIMARY KEY AUTO_INCREMENT,
+ user_id BIGINT,
+ action VARCHAR(200) NOT NULL,
+ module VARCHAR(100) NOT NULL,
+ details VARCHAR(1000),
+ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ FOREIGN KEY (user_id) REFERENCES users(id)
+);
