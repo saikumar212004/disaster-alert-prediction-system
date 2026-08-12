@@ -1,0 +1,5 @@
+com\disasteralert\controller\ApiController.class
+com\disasteralert\repository\DisasterRepository.class
+com\disasteralert\model\PredictionResult.class
+com\disasteralert\DisasterAlertApplication.class
+com\disasteralert\service\PredictionService.class

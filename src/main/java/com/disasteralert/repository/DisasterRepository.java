@@ -17,6 +17,9 @@ public class DisasterRepository {
         this.db = db;
     }
 
+    /**
+     * Returns the latest disaster readings along with their predictions.
+     */
     public List<Map<String, Object>> dashboard() {
 
         return db.queryForList("""
@@ -44,6 +47,9 @@ public class DisasterRepository {
                 """);
     }
 
+    /**
+     * Returns all alerts, newest first.
+     */
     public List<Map<String, Object>> alerts() {
 
         return db.queryForList("""
@@ -53,6 +59,9 @@ public class DisasterRepository {
                 """);
     }
 
+    /**
+     * Returns all registered users.
+     */
     public List<Map<String, Object>> users() {
 
         return db.queryForList("""
@@ -70,6 +79,9 @@ public class DisasterRepository {
                 """);
     }
 
+    /**
+     * Returns credentials together with user information.
+     */
     public List<Map<String, Object>> credentials() {
 
         return db.queryForList("""
@@ -84,6 +96,9 @@ public class DisasterRepository {
                 """);
     }
 
+    /**
+     * Returns the latest system logs.
+     */
     public List<Map<String, Object>> logs() {
 
         return db.queryForList("""
@@ -98,6 +113,10 @@ public class DisasterRepository {
                 """);
     }
 
+    /**
+     * Returns prediction history together with the environmental
+     * conditions that produced each prediction.
+     */
     public List<Map<String, Object>> history() {
 
         return db.queryForList("""
@@ -117,6 +136,9 @@ public class DisasterRepository {
                 """);
     }
 
+    /**
+     * Inserts an environmental reading and returns the generated ID.
+     */
     public long insertReading(
             String location,
             double temp,
@@ -151,16 +173,41 @@ public class DisasterRepository {
                 source
         );
 
-        return db.queryForObject(
+        Long id = db.queryForObject(
                 "SELECT LAST_INSERT_ID()",
                 Long.class
         );
+
+        if (id == null) {
+            throw new IllegalStateException(
+                    "Unable to retrieve generated disaster reading ID"
+            );
+        }
+
+        return id;
     }
 
+    /**
+     * Inserts a prediction.
+     *
+     * If the prediction is not NORMAL, an alert is also created.
+     */
     public void insertPrediction(
             long reading,
             PredictionResult p) {
 
+        if (p == null) {
+            throw new IllegalArgumentException(
+                    "PredictionResult cannot be null"
+            );
+        }
+
+        /*
+         * Insert prediction.
+         *
+         * IMPORTANT:
+         * These are Java getter methods because p is a Java object.
+         */
         db.update("""
                 INSERT INTO predictions
                     (
@@ -175,21 +222,36 @@ public class DisasterRepository {
                 VALUES (?, ?, ?, ?, ?, ?, ?)
                 """,
                 reading,
-                p.disasterType(),
-                p.riskLevel(),
-                p.probability(),
-                p.confidence(),
-                p.message(),
-                p.recommendedAction()
+                p.getDisasterType(),
+                p.getRiskLevel(),
+                p.getProbability(),
+                p.getConfidence(),
+                p.getMessage(),
+                p.getRecommendation()
         );
 
-        // Create an alert when the prediction is not NORMAL
-        if (!"NORMAL".equals(p.disasterType())) {
+        /*
+         * Create an alert for every disaster prediction except NORMAL.
+         */
+        if (!"NORMAL".equalsIgnoreCase(p.getDisasterType())) {
 
             Long predictionId = db.queryForObject(
                     "SELECT LAST_INSERT_ID()",
                     Long.class
             );
+
+            if (predictionId == null) {
+                throw new IllegalStateException(
+                        "Unable to retrieve generated prediction ID"
+                );
+            }
+
+            String title = p.getDisasterType() + " Alert";
+
+            String alertMessage =
+                    p.getMessage()
+                            + " "
+                            + p.getRecommendation();
 
             db.update("""
                     INSERT INTO alerts
@@ -206,51 +268,53 @@ public class DisasterRepository {
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                     """,
                     predictionId,
-                    p.disasterType() + " Alert",
-                    p.disasterType(),
-                    p.riskLevel(),
+                    title,
+                    p.getDisasterType(),
+                    p.getRiskLevel(),
                     "Demo Region",
-                    p.message() + " " + p.recommendedAction(),
+                    alertMessage,
                     "IN_APP,EMAIL",
                     "ACTIVE"
             );
         }
     }
 
+    /**
+     * Returns dashboard statistics.
+     */
     public Map<String, Object> stats() {
 
         Map<String, Object> m = new LinkedHashMap<>();
 
-        m.put(
-                "users",
-                db.queryForObject(
-                        "SELECT COUNT(*) FROM users",
-                        Long.class
-                )
+        Long users = db.queryForObject(
+                "SELECT COUNT(*) FROM users",
+                Long.class
         );
 
-        m.put(
-                "alerts",
-                db.queryForObject(
-                        "SELECT COUNT(*) FROM alerts",
-                        Long.class
-                )
+        Long alerts = db.queryForObject(
+                "SELECT COUNT(*) FROM alerts",
+                Long.class
         );
 
+        Long activeAlerts = db.queryForObject(
+                "SELECT COUNT(*) FROM alerts WHERE status = 'ACTIVE'",
+                Long.class
+        );
+
+        Long predictions = db.queryForObject(
+                "SELECT COUNT(*) FROM predictions",
+                Long.class
+        );
+
+        m.put("users", users != null ? users : 0);
+        m.put("alerts", alerts != null ? alerts : 0);
         m.put(
                 "activeAlerts",
-                db.queryForObject(
-                        "SELECT COUNT(*) FROM alerts WHERE status = 'ACTIVE'",
-                        Long.class
-                )
+                activeAlerts != null ? activeAlerts : 0
         );
-
         m.put(
                 "predictions",
-                db.queryForObject(
-                        "SELECT COUNT(*) FROM predictions",
-                        Long.class
-                )
+                predictions != null ? predictions : 0
         );
 
         return m;
